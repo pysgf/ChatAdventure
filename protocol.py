@@ -9,5 +9,5 @@ BYE = "BYE {key}\n"
 BYE_RE = re.compile("^BYE (?P<key>\w+)\n$")
 
 MESSAGE = "SAY {key} {message}\n"
-MESSAGE_RE = re.compile("^SAY (?P<key>\w+) (?P<message>\w+)\n$")
+MESSAGE_RE = re.compile("^SAY (?P<key>\w+) (?P<message>[\w ]+)\n$")
 

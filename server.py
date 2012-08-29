@@ -42,7 +42,7 @@ class Handler(SocketServer.BaseRequestHandler):
                 broadcast("{0} said: {1}".format(client['name'], data['message']))
                 return
 
-        print "didn't understand:", packet
+        print 'could not understand: "{0}"'.format(packet)
 
 
 def main(port):
