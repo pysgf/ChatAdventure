@@ -6,21 +6,48 @@ import argparse
 from protocol import *
 
 
-class HandleTCP(SocketServer.BaseRequestHandler):
+clients = {}
+
+def broadcast(message):
+    print "broadcasting:", message
+    for key, info in clients.items():
+        info['sock'].sendto(message, info['addr'])
+
+
+class Handler(SocketServer.BaseRequestHandler):
 
     def handle(self):
-        while 1:
-            data = self.request.recv(1024).strip()
-            if not data:
-                break
+        packet, socket = self.request
 
-            print "client:", data
-            self.request.sendall(data)
+        if not packet:
+            return
+
+        message = HELLO_RE.match(packet)
+        if message:
+            data = message.groupdict()
+            clients[data['key']] = {
+                    'name': data['name'],
+                    'addr': self.client_address,
+                    'sock': socket
+            }
+
+            broadcast("{0} logged in, say hello!".format(data['name']))
+            return
+
+        message = MESSAGE_RE.match(packet)
+        if message:
+            data = message.groupdict()
+            if data['key'] in clients:
+                client = clients[data['key']]
+                broadcast("{0} said: {1}".format(client['name'], data['message']))
+                return
+
+        print "didn't understand:", packet
 
 
 def main(port):
     HOST, PORT = "0.0.0.0", port
-    server = SocketServer.TCPServer((HOST, PORT), HandleTCP)
+    server = SocketServer.UDPServer((HOST, PORT), Handler)
     server.serve_forever()
 
 
@@ -29,3 +56,4 @@ if __name__=='__main__':
 
     port = 8123
     main(port=port)
+
